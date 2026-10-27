@@ -1,6 +1,5 @@
 // 电子科技大学中山学院(jwgln.zsc.edu.cn) 拾光课程表适配脚本
-// 非该大学开发者适配,开发者无法及时发现问题
-// 出现问题请联系开发者或者提交pr更改,这更加快速
+// 出现问题请联系维护者 Lanjunyee，或提交 issue / PR 反馈。
 
 const BASE_URL = "https://jwgln.zsc.edu.cn";
 const URL_SEMESTER = `${BASE_URL}/jsxsd/jxzl/jxzl_query`;
