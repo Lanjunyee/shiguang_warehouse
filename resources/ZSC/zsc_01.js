@@ -284,14 +284,20 @@ async function fetchCourses(semesterId) {
 }
 
 async function saveAppConfig(semesterStartDate, totalWeeks) {
-    const config = {
-        "semesterTotalWeeks": totalWeeks || 20,
-        "firstDayOfWeek": 1
-    };
-    if (semesterStartDate) {
-        config.semesterStartDate = semesterStartDate;
+    try {
+        const config = {
+            "semesterTotalWeeks": totalWeeks || 20,
+            "firstDayOfWeek": 1
+        };
+        if (semesterStartDate) {
+            config.semesterStartDate = semesterStartDate;
+        }
+        await window.shiguangBridgePromise.saveCourseConfig(JSON.stringify(config));
+        return true;
+    } catch (error) {
+        window.shiguangBridge.showToast("课表配置导入失败，已跳过。");
+        return false;
     }
-    return await window.shiguangBridgePromise.saveCourseConfig(JSON.stringify(config));
 }
 
 async function saveAppTimeSlots() {
@@ -309,7 +315,13 @@ async function saveAppTimeSlots() {
         { "number": 11, "startTime": "20:30", "endTime": "21:15" },
         { "number": 12, "startTime": "21:25", "endTime": "22:10" }
     ];
-    return await window.shiguangBridgePromise.savePresetTimeSlots(JSON.stringify(slots));
+    try {
+        await window.shiguangBridgePromise.savePresetTimeSlots(JSON.stringify(slots));
+        return true;
+    } catch (error) {
+        window.shiguangBridge.showToast("作息导入失败，已跳过。");
+        return false;
+    }
 }
 
 async function runImportFlow() {
@@ -347,7 +359,17 @@ async function runImportFlow() {
 
         await saveAppConfig(semesterStartDate, totalWeeks);
         await saveAppTimeSlots();
-        await window.shiguangBridgePromise.saveImportedCourses(JSON.stringify(finalCourses));
+
+        let saved = false;
+        try {
+            saved = await window.shiguangBridgePromise.saveImportedCourses(JSON.stringify(finalCourses));
+        } catch (saveError) {
+            saved = false;
+        }
+        if (saved !== true) {
+            window.shiguangBridge.showToast("课程导入失败，请重试。");
+            return;
+        }
 
         window.shiguangBridge.showToast(`成功导入 ${finalCourses.length} 门课程`);
         window.shiguangBridge.notifyTaskCompletion();
